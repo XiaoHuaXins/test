@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Mapper.personMapper">
+    <select id="Query" resultType="Mapper.Person">
+        select * from id
+    </select>
+
+    <insert id="insertInfo" parameterType="Mapper.Person">
+        insert into id(Username,id,pwd) values(#{Username},#{id},#{pwd})
+    </insert>
+    <select id="selectAll" resultType="Person">
+        select *from  Info
+    </select>
+    <select id="selectByNaOrAge" parameterType="person" resultType="person">
+        select *from Info where 
+        <if test="Username!=null">
+            Username =#{Username}
+        </if>
+        <if test="Username==null and Sex!=null">
+            Sex=#{Sex}
+        </if>
+    </select>
+    <select id="selectById" parameterType="int" resultMap="resultMap">
+        select *from Info where Sex=#{sex}
+    </select>
+    <resultMap id="resultMap" type="person">
+        <!--  主键为id 、非主键为result-->
+        <id property="Username" column="Username"/>
+        <result property="Id" column="Id"/>
+        <result property="Sex" column="Sex"/>
+        <result property="Address" column="Address"/>
+        <result property="hobby" column="hobby"/>
+        <result property="Graduated" column="Graduated"/>
+    </resultMap>
+</mapper>
