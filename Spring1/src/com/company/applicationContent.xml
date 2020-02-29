@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-4.3.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd ">
+
+    <!-- 配置扫描器 -->
+    <context:component-scan base-package="com.company.entity,com.company.aop"/>
+    <!-- 配置数据库相关-事务-->
+    <bean id="dateSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+        <property name="url" value="jdbc:mysql://localhost:3306/test"></property>
+        <property name="username" value="root"></property>
+        <property name="password" value="123456"></property>
+        <property name="maxActive" value="10"></property>
+        <property name="maxIdle" value="6"></property>
+    </bean>
+    <!-- 配置事务管理器txManager 核心-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dateSource"></property>
+    </bean>
+    <bean id="person" class="com.company.entity.Person"></bean>
+    <bean id="personDao" class="com.company.dao.iml.PersonDaoIml"></bean>
+    <bean id="personService" class="com.company.service.personServiceIml">
+        <property name="personDao" ref="personDao"></property>
+    </bean>
+
+
+    <!-- 配置前置通知 -->
+    <!-- 前置通知类-->
+    <bean id="LogBefore" class="com.company.aop.LogBefore">
+    </bean>
+    <!-- 环绕增加到容器 -->
+    <bean id="LogAround" class="com.company.aop.LogAround"></bean>
+    <!-- 后置通知 -->
+    <bean id="LogAfter" class="com.company.aop.LogAfter"></bean>
+    <!-- 关联通知类和方法-->
+    <aop:config>
+        <!-- 配置切入点 (前置)-->
+    <aop:pointcut expression="execution(public void com.company.dao.iml.PersonDaoIml.addStudent(com.company.entity.Person))" id="pointcut"></aop:pointcut>
+    <aop:advisor advice-ref="LogBefore" pointcut-ref="pointcut"></aop:advisor>
+    </aop:config>
+    <aop:config>
+        <!--  后置  -->
+        <aop:pointcut expression="execution(public void com.company.dao.iml.PersonDaoIml.addStudent(com.company.entity.Person))" id="after"></aop:pointcut>
+        <aop:advisor advice-ref="LogAfter" pointcut-ref="after"></aop:advisor>
+    </aop:config>
+    <!-- 环绕 -->
+    <aop:config>
+        <aop:pointcut id="around" expression="execution(public void com.company.dao.iml.PersonDaoIml.addStudent(com.company.entity.Person))"/>
+        <aop:advisor advice-ref="LogAround" pointcut-ref="around"></aop:advisor>
+    </aop:config>
+     <!--  增加对事务支持 -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+    <!-- 开启注解对aop的支持-->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+</beans>
